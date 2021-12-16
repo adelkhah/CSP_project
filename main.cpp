@@ -52,8 +52,10 @@ template<class A> ostream& operator <<(ostream& out, const set<A> &s)
 
 int32_t SALI()
 {
-
-
+    int n; cin >> n;
+    for(int i = 0; i < n; i++){
+        cout << i << endl;
+    }
 }
 
 /**< WRITEN BY ALI ADELKHAH */
