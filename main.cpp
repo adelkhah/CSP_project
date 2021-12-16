@@ -49,13 +49,37 @@ template<class A,class B> ostream& operator <<(ostream& out, const set<A,B> &s)
 template<class A> ostream& operator <<(ostream& out, const set<A> &s)
 {out << "[";for(auto i = s.begin(); i != s.end(); i++) {out << ", ";out << *i;}return out << "]";}
 
+const int N = 50;
+int n,m;
+int row_plus[N];// row_plus[i] = 2 : sum + a[i][1 ... m] = 2
+int row_neg[N];  // row_neg[i] = 4 : sum - a[i][1 ... m] = 4
+int cul_plus[N];// cul_plus[i] = 5 : sum + a[1 ... n][i] = 5
+int cul_neg[N];  // cul_neg[i] = 5 : sum - a[1 ... n][i] = 5
+int a[N][N];
+int ans[N][N];
 
 int32_t SALI()
 {
-    int n; cin >> n;
-    for(int i = 0; i < n; i++){
-        cout << i << endl;
+    cin >> n >> m;
+    for(int i = 1; i <= n; i++){
+        cin >> row_plus[i];
     }
+    for(int i = 1; i <= n; i++){
+        cin >> row_neg[i];
+    }
+    for(int i = 1; i <= m; i++){
+        cin >> cul_plus[i];
+    }
+    for(int i = 1; i <= m; i++){
+        cin >> cul_neg[i];
+    }
+    for(int i = 1; i <= n; i++){
+        for(int j = 1; j <= m; j++){
+            cin >> a[i][j];
+        }
+    }
+
+
 }
 
 /**< WRITEN BY ALI ADELKHAH */
