@@ -1,0 +1,4 @@
+bin
+obj
+CSP_prject.cbp
+CSP_project.layout
