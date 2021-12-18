@@ -27,7 +27,7 @@ ___yek shokre to az hezar natvanam kard
 #define findUpVec(v,x) (upper_bound(v.begin(), v.end(), x) - v.begin())
 #define findLowArr(a,n,x) (lower_bound(a, a+n, x) - a)
 #define findUpArr(a,n,x) (upper_bound(a, a+n, x) - a)
-#define int long long
+//#define int long long
 
 using namespace std;
 
@@ -50,19 +50,74 @@ template<class A> ostream& operator <<(ostream& out, const set<A> &s)
 {out << "[";for(auto i = s.begin(); i != s.end(); i++) {out << ", ";out << *i;}return out << "]";}
 
 const int N = 50;
-int n,m;
+vector<pii> v; // varaibles
+int n,m; // size of matrix
+int total_pole; // number of pole should placed
+int domain[N][3]; // domain[i][j] = 1 : j can be assigned to variable i
+int assigned[N]; // assigned[i] = -1 : not assigned      assigned[i] = j : j assigned to i
 int row_plus[N];// row_plus[i] = 2 : sum + a[i][1 ... m] = 2
 int row_neg[N];  // row_neg[i] = 4 : sum - a[i][1 ... m] = 4
 int cul_plus[N];// cul_plus[i] = 5 : sum + a[1 ... n][i] = 5
 int cul_neg[N];  // cul_neg[i] = 5 : sum - a[1 ... n][i] = 5
-int a[N][N];
-int ans[N][N];
+int mark[N*N]; // just needed at the start to set coordinates for variables
+int a[N][N]; // matrix
+int state[N][N]; // shows the current state
 
-int32_t SALI()
+int get_sum_plus_column(int x)
+{
+
+}
+
+int get_sum_neg_column(int x)
+{
+
+}
+int get_sum_plus_row(int x)
+{
+
+}
+int get_sum_neg_row(int x)
+{
+
+}
+bool is_goal()
+{
+
+}
+void pre_process() // at first no assignment is done and all domain are avalible
+{
+    memset(assigned, -1, sizeof(assigned));
+    for(int i = 0; i < N; i++){
+        for(int j = 0; j < 4; j++){
+            domain[i][j] = 1;
+        }
+    }
+}
+bool forward_checking()
+{
+
+}
+
+int MRV() // returns the index of the next element according to MRV heuristic
+{
+
+}
+int LCV() // returns the index of the next element according to LCV heuristic
+{
+
+}
+
+void back_tracking()
+{
+
+}
+
+void read_input()
 {
     cin >> n >> m;
     for(int i = 1; i <= n; i++){
         cin >> row_plus[i];
+        total_pole += row_plus[i];
     }
     for(int i = 1; i <= n; i++){
         cin >> row_neg[i];
@@ -79,6 +134,21 @@ int32_t SALI()
         }
     }
 
+}
+
+
+int32_t SALI()
+{
+    pre_process();
+    read_input();
+    for(int i = 1; i <= n; i++){
+        for(int j = 1; j <= m; j++){
+            if(mark[a[i][j]] == 0){
+                v.pb(pii(i,j));
+                mark[a[i][j]] = 1;
+            }
+        }
+    }
 
 }
 
