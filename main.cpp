@@ -62,30 +62,72 @@ int cul_neg[N];  // cul_neg[i] = 5 : sum - a[1 ... n][i] = 5
 int mark[N*N]; // just needed at the start to set coordinates for variables
 int a[N][N]; // matrix
 int state[N][N]; // shows the current state
-
+int id;
+void print()
+{
+    for(int i = 1; i <= n; i++){
+        for(int j = 1; j <= m; j++){
+            cout << state[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
 int get_sum_plus_column(int x)
 {
-
+    int sum = 0;
+    for(int i = 1; i <= n; i++){
+        sum += state[i][x];
+    }
+    return sum;
 }
 
 int get_sum_neg_column(int x)
 {
-
+    int sum = 0;
+    for(int i = 1; i <= n; i++){
+        sum -= state[i][x];
+    }
+    return sum;
 }
 int get_sum_plus_row(int x)
 {
-
+    int sum = 0;
+    for(int i = 1; i <= m; i++){
+        sum += state[x][i];
+    }
+    return sum;
 }
 int get_sum_neg_row(int x)
 {
-
+    int sum = 0;
+    for(int i = 1; i <= m; i++){
+        sum -= state[x][i];
+    }
+    return sum;
 }
 bool is_goal()
 {
-
+    for(int i = 1; i <= n; i++){
+        if(row_plus[i] != get_sum_plus_row(i)){
+            return false;
+        }
+        if(row_neg[i] != get_sum_neg_row(i)){
+            return false;
+        }
+    }
+    for(int i = 1; i <= m; i++){
+        if(row_plus[i] != get_sum_plus_column(i)){
+            return false;
+        }
+        if(row_neg[i] != get_sum_neg_column(i)){
+            return false;
+        }
+    }
+    return true;
 }
 void pre_process() // at first no assignment is done and all domain are avalible
 {
+    id = -1;
     memset(assigned, -1, sizeof(assigned));
     for(int i = 0; i < N; i++){
         for(int j = 0; j < 4; j++){
@@ -100,7 +142,8 @@ bool forward_checking()
 
 int MRV() // returns the index of the next element according to MRV heuristic
 {
-
+    id++;
+    return id;
 }
 int LCV() // returns the index of the next element according to LCV heuristic
 {
@@ -109,6 +152,18 @@ int LCV() // returns the index of the next element according to LCV heuristic
 
 void back_tracking()
 {
+    if(is_goal()){
+        print();
+        exit(0);
+    }
+
+    for(int i = 0; i < 4; i++){
+        if(domain[id][i] == 1){
+            assigned[id] = i;
+            back_tracking();
+            assigned[id] = -1;
+        }
+    }
 
 }
 
