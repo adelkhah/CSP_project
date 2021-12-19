@@ -54,6 +54,9 @@ vector<pii> v; // varaibles
 int n,m; // size of matrix
 int total_pole; // number of pole should placed
 int domain[N][3]; // domain[i][j] = 1 : j can be assigned to variable i
+// 0 -> -1 +1
+// 1 ->  0  0
+// 2 -> +1 -1
 int assigned[N]; // assigned[i] = -1 : not assigned      assigned[i] = j : j assigned to i
 int row_plus[N];// row_plus[i] = 2 : sum + a[i][1 ... m] = 2
 int row_neg[N];  // row_neg[i] = 4 : sum - a[i][1 ... m] = 4
@@ -62,17 +65,75 @@ int cul_neg[N];  // cul_neg[i] = 5 : sum - a[1 ... n][i] = 5
 int mark[N*N]; // just needed at the start to set coordinates for variables
 int a[N][N]; // matrix
 int state[N][N]; // shows the current state
-int id;
-void print()
+
+void place_variable(int var) /// done
 {
+    int x = v[var].first;
+    int y = v[var].second;
+    if(assigned[var] == 0){
+        state[x][y] = -1;
+        if(a[x][y+1] == a[x][y]){
+            state[x][y+1] = +1;
+        }
+        if(a[x+1][y] == a[x][y]){
+            state[x+1][y] = +1;
+        }
+    }
+    if(assigned[var] == 2){
+        state[x][y] = +1;
+        if(a[x][y+1] == a[x][y]){
+            state[x][y+1] = -1;
+        }
+        if(a[x+1][y] == a[x][y]){
+            state[x+1][y] = -1;
+        }
+    }
+}
+void update_state() /// done
+{
+    for(int i = 0; i < N; i++) for(int j = 0; j < N; j++) state[i][j] = 0;
+
+    for(int i = 0; i < v.size(); i++){
+        if(assigned[i] != -1){
+            place_variable(i);
+        }
+    }
+}
+
+/// done
+bool is_consistant() // check if current state is consistent in every aspects
+{
+    update_state();
     for(int i = 1; i <= n; i++){
         for(int j = 1; j <= m; j++){
-            cout << state[i][j] << " ";
+            if(state[i][j] == state[i+1][j] && state[i][j] != 0){
+                return false;
+            }
+            if(state[i][j] == state[i][j+1] && state[i][j] != 0){
+                return false;
+            }
+        }
+    }
+}
+void print() /// done
+{
+    update_state();
+    for(int i = 1; i <= n; i++){
+        for(int j = 1; j <= m; j++){
+            if(state[i][j] == 1){
+                cout << "+ ";
+            }
+            if(state[i][j] == -1){
+                cout << "- ";
+            }
+            if(state[i][j] == 0){
+                cout << "0 ";
+            }
         }
         cout << endl;
     }
 }
-int get_sum_plus_column(int x)
+int get_sum_plus_column(int x) /// done
 {
     int sum = 0;
     for(int i = 1; i <= n; i++){
@@ -81,7 +142,7 @@ int get_sum_plus_column(int x)
     return sum;
 }
 
-int get_sum_neg_column(int x)
+int get_sum_neg_column(int x) /// done
 {
     int sum = 0;
     for(int i = 1; i <= n; i++){
@@ -89,7 +150,7 @@ int get_sum_neg_column(int x)
     }
     return sum;
 }
-int get_sum_plus_row(int x)
+int get_sum_plus_row(int x) /// done
 {
     int sum = 0;
     for(int i = 1; i <= m; i++){
@@ -97,7 +158,7 @@ int get_sum_plus_row(int x)
     }
     return sum;
 }
-int get_sum_neg_row(int x)
+int get_sum_neg_row(int x) /// done
 {
     int sum = 0;
     for(int i = 1; i <= m; i++){
@@ -105,7 +166,7 @@ int get_sum_neg_row(int x)
     }
     return sum;
 }
-bool is_goal()
+bool is_goal() /// done
 {
     for(int i = 1; i <= n; i++){
         if(row_plus[i] != get_sum_plus_row(i)){
@@ -123,11 +184,15 @@ bool is_goal()
             return false;
         }
     }
+    if(!is_consistant()){
+        return false;
+    }
     return true;
 }
+
+/// done
 void pre_process() // at first no assignment is done and all domain are avalible
 {
-    id = -1;
     memset(assigned, -1, sizeof(assigned));
     for(int i = 0; i < N; i++){
         for(int j = 0; j < 4; j++){
@@ -135,38 +200,78 @@ void pre_process() // at first no assignment is done and all domain are avalible
         }
     }
 }
-bool forward_checking()
-{
 
+void update_domain(int var) /// done
+{
+    for(int i = 0; i < 4; i++){
+        assigned[var] = i;
+        if(is_consistant()){
+            domain[var][i] = 1;
+        }
+        else{
+            domain[var][i] = 0;
+        }
+    }
+}
+void forward_checking() /// done
+{
+    for(int i = 0; i < v.size(); i++){
+        if(assigned[i] == -1){
+            update_domain(i);
+        }
+    }
 }
 
+/// done
 int MRV() // returns the index of the next element according to MRV heuristic
 {
-    id++;
-    return id;
+    int id_var = 0;
+    int min_domain_size = 5;
+    for(int i = 0; i < v.size(); i++){
+        int sum = 0;
+        for(int j = 0; j < 4; j++){
+            sum += domain[i][j];
+        }
+        if(sum < min_domain_size){
+            min_domain_size = sum;
+            id_var = i;
+        }
+    }
+    return id_var;
 }
-int LCV() // returns the index of the next element according to LCV heuristic
+
+
+int LCV(int var) // returns the value of the chosen variable according to LCV heuristic
 {
-
+    // TODO
+    for(int i = 0; i < 4; i++){
+        if(domain[var][i] == 1){
+            return var;
+        }
+    }
+    return -1;
 }
 
+/// done
 void back_tracking()
 {
     if(is_goal()){
         print();
         exit(0);
     }
-
-    for(int i = 0; i < 4; i++){
-        if(domain[id][i] == 1){
-            assigned[id] = i;
-            back_tracking();
-            assigned[id] = -1;
-        }
+    forward_checking(); // checks each variable domain
+    int id = MRV();
+    int value;
+    while((value = LCV(id)) != -1){
+        assigned[id] = value;
+        back_tracking();
+        assigned[id] = -1;
+        domain[id][value] = 0;
     }
 
 }
 
+/// done
 void read_input()
 {
     cin >> n >> m;
@@ -191,11 +296,9 @@ void read_input()
 
 }
 
-
-int32_t SALI()
+/// done
+void find_variable_cordinate()
 {
-    pre_process();
-    read_input();
     for(int i = 1; i <= n; i++){
         for(int j = 1; j <= m; j++){
             if(mark[a[i][j]] == 0){
@@ -204,7 +307,26 @@ int32_t SALI()
             }
         }
     }
+}
+int32_t SALI()
+{
+    pre_process();
+    read_input();
+    find_variable_cordinate();
+    back_tracking();
 
 }
-
+/*
+6 6
+1 2 3 1 2 1
+1 2 1 3 1 2
+2 1 2 2 2 1
+2 1 2 2 1 2
+1 2 2 3 4 4
+1 5 5 3 6 6
+7 8 8 9 9 10
+7 11 12 12 13 10
+14 11 15 15 13 16
+14 17 17 18 18 16
+*/
 /**< WRITEN BY ALI ADELKHAH */
