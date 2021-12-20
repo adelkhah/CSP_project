@@ -23,6 +23,7 @@ ___yek shokre to az hezar natvanam kard
 #define left(x) ((x)*2)
 #define right(x) (((x)*2)+1)
 #define fuck(x) cout << #x << " : " << x << "  "
+#define shit(x) cout << "fuck " << x << endl;
 #define findLowVec(v,x) (lower_bound(v.begin(), v.end(), x) - v.begin())
 #define findUpVec(v,x) (upper_bound(v.begin(), v.end(), x) - v.begin())
 #define findLowArr(a,n,x) (lower_bound(a, a+n, x) - a)
@@ -50,6 +51,7 @@ template<class A> ostream& operator <<(ostream& out, const set<A> &s)
 {out << "[";for(auto i = s.begin(); i != s.end(); i++) {out << ", ";out << *i;}return out << "]";}
 
 const int N = 50;
+int number_of_back_tracking;
 vector<pii> v; // varaibles
 int n,m; // size of matrix
 int total_pole; // number of pole should placed
@@ -66,6 +68,45 @@ int mark[N*N]; // just needed at the start to set coordinates for variables
 int a[N][N]; // matrix
 int state[N][N]; // shows the current state
 
+int get_sum_plus_column(int x) /// done
+{
+    int sum = 0;
+    for(int i = 1; i <= n; i++){
+        sum += (state[i][x] == 1? 1 : 0);
+    }
+    return sum;
+}
+
+int get_sum_neg_column(int x) /// done
+{
+    int sum = 0;
+    for(int i = 1; i <= n; i++){
+        sum += (state[i][x] == -1? 1 : 0);
+    }
+    return sum;
+}
+int get_sum_plus_row(int x) /// done
+{
+    int sum = 0;
+    for(int i = 1; i <= m; i++){
+        sum += (state[x][i] == 1 ? 1 : 0);
+    }
+    return sum;
+}
+int get_sum_neg_row(int x) /// done
+{
+    int sum = 0;
+    for(int i = 1; i <= m; i++){
+        sum += (state[x][i] == -1 ? 1 : 0);
+    }
+    return sum;
+}
+void fuck_domain()
+{
+    for(int i = 0; i < v.size(); i++){
+        cout << i << " : " << domain[i][0] << " " << domain[i][1] << " " << domain[i][2] << endl;
+    }
+}
 void place_variable(int var) /// done
 {
     int x = v[var].first;
@@ -98,12 +139,20 @@ void update_state() /// done
             place_variable(i);
         }
     }
+
 }
 
 /// done
 bool is_consistant() // check if current state is consistent in every aspects
 {
     update_state();
+    int pole = 0;
+    for(int i = 0; i < v.size(); i++){
+        pole += (assigned[i] % 2 == 0 ? 1 : 0);
+    }
+    if(pole > total_pole){
+        return false;
+    }
     for(int i = 1; i <= n; i++){
         for(int j = 1; j <= m; j++){
             if(state[i][j] == state[i+1][j] && state[i][j] != 0){
@@ -114,8 +163,27 @@ bool is_consistant() // check if current state is consistent in every aspects
             }
         }
     }
+
+    for(int i = 1; i <= n; i++){
+        if(row_plus[i] < get_sum_plus_row(i)){
+            return false;
+        }
+        if(row_neg[i] < get_sum_neg_row(i)){
+            return false;
+        }
+    }
+    for(int i = 1; i <= m; i++){
+        if(cul_plus[i] < get_sum_plus_column(i)){
+            return false;
+        }
+        if(cul_neg[i] < get_sum_neg_column(i)){
+            return false;
+        }
+    }
+
+    return true;
 }
-void print() /// done
+void print_state() /// done
 {
     update_state();
     for(int i = 1; i <= n; i++){
@@ -133,41 +201,11 @@ void print() /// done
         cout << endl;
     }
 }
-int get_sum_plus_column(int x) /// done
-{
-    int sum = 0;
-    for(int i = 1; i <= n; i++){
-        sum += state[i][x];
-    }
-    return sum;
-}
 
-int get_sum_neg_column(int x) /// done
-{
-    int sum = 0;
-    for(int i = 1; i <= n; i++){
-        sum -= state[i][x];
-    }
-    return sum;
-}
-int get_sum_plus_row(int x) /// done
-{
-    int sum = 0;
-    for(int i = 1; i <= m; i++){
-        sum += state[x][i];
-    }
-    return sum;
-}
-int get_sum_neg_row(int x) /// done
-{
-    int sum = 0;
-    for(int i = 1; i <= m; i++){
-        sum -= state[x][i];
-    }
-    return sum;
-}
 bool is_goal() /// done
 {
+    update_state();
+
     for(int i = 1; i <= n; i++){
         if(row_plus[i] != get_sum_plus_row(i)){
             return false;
@@ -177,10 +215,10 @@ bool is_goal() /// done
         }
     }
     for(int i = 1; i <= m; i++){
-        if(row_plus[i] != get_sum_plus_column(i)){
+        if(cul_plus[i] != get_sum_plus_column(i)){
             return false;
         }
-        if(row_neg[i] != get_sum_neg_column(i)){
+        if(cul_neg[i] != get_sum_neg_column(i)){
             return false;
         }
     }
@@ -195,7 +233,7 @@ void pre_process() // at first no assignment is done and all domain are avalible
 {
     memset(assigned, -1, sizeof(assigned));
     for(int i = 0; i < N; i++){
-        for(int j = 0; j < 4; j++){
+        for(int j = 0; j < 3; j++){
             domain[i][j] = 1;
         }
     }
@@ -203,7 +241,7 @@ void pre_process() // at first no assignment is done and all domain are avalible
 
 void update_domain(int var) /// done
 {
-    for(int i = 0; i < 4; i++){
+    for(int i = 0; i < 3; i++){
         assigned[var] = i;
         if(is_consistant()){
             domain[var][i] = 1;
@@ -211,10 +249,12 @@ void update_domain(int var) /// done
         else{
             domain[var][i] = 0;
         }
+        assigned[var] = -1;
     }
 }
 void forward_checking() /// done
 {
+
     for(int i = 0; i < v.size(); i++){
         if(assigned[i] == -1){
             update_domain(i);
@@ -225,11 +265,14 @@ void forward_checking() /// done
 /// done
 int MRV() // returns the index of the next element according to MRV heuristic
 {
-    int id_var = 0;
+    int id_var = -1;
     int min_domain_size = 5;
     for(int i = 0; i < v.size(); i++){
+        if(assigned[i] != -1){
+            continue;
+        }
         int sum = 0;
-        for(int j = 0; j < 4; j++){
+        for(int j = 0; j < 3; j++){
             sum += domain[i][j];
         }
         if(sum < min_domain_size){
@@ -244,9 +287,12 @@ int MRV() // returns the index of the next element according to MRV heuristic
 int LCV(int var) // returns the value of the chosen variable according to LCV heuristic
 {
     // TODO
-    for(int i = 0; i < 4; i++){
+    if(var == -1){
+        return -1;
+    }
+    for(int i = 0; i < 3; i++){
         if(domain[var][i] == 1){
-            return var;
+            return i;
         }
     }
     return -1;
@@ -255,8 +301,19 @@ int LCV(int var) // returns the value of the chosen variable according to LCV he
 /// done
 void back_tracking()
 {
+    number_of_back_tracking++;
+    /*
+    if(assigned[0] == 1 && assigned[1] == 0 && assigned[2] == 1 && assigned[3] == 1
+       && assigned[4] == 2 && assigned[5] == 2 && assigned[6] == 2 && assigned[7] == 1
+       && assigned[8] == 2 && assigned[9] == 2 && assigned[10] == 1 && assigned[11] == 2
+       && assigned[12] == 1 && assigned[13] == 2 && assigned[14] == 0 && assigned[15] == 1){
+        print_state();
+        cout << endl;
+        fuck(is_goal()) << endl;
+    }
+    */
     if(is_goal()){
-        print();
+        print_state();
         exit(0);
     }
     forward_checking(); // checks each variable domain
@@ -314,8 +371,10 @@ int32_t SALI()
     read_input();
     find_variable_cordinate();
     back_tracking();
-
+    print_state();
+    fuck(number_of_back_tracking) << endl;
 }
+/// 1277869
 /*
 6 6
 1 2 3 1 2 1
