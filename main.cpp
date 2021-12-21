@@ -67,7 +67,7 @@ int cul_neg[N];  // cul_neg[i] = 5 : sum - a[1 ... n][i] = 5
 int mark[N*N]; // just needed at the start to set coordinates for variables
 int a[N][N]; // matrix
 int state[N][N]; // shows the current state
-
+int next_var;
 int get_sum_plus_column(int x) /// done
 {
     int sum = 0;
@@ -231,6 +231,7 @@ bool is_goal() /// done
 /// done
 void pre_process() // at first no assignment is done and all domain are avalible
 {
+    next_var = -1;
     memset(assigned, -1, sizeof(assigned));
     for(int i = 0; i < N; i++){
         for(int j = 0; j < 3; j++){
@@ -262,6 +263,7 @@ void forward_checking() /// done
     }
 }
 
+
 /// done
 int MRV() // returns the index of the next element according to MRV heuristic
 {
@@ -283,26 +285,65 @@ int MRV() // returns the index of the next element according to MRV heuristic
     return id_var;
 }
 
-
-int LCV(int var) // returns the value of the chosen variable according to LCV heuristic
+int constraint_number(int var, int val)
 {
-    // TODO
+    assigned[var] = val;
+    forward_checking();
+    int sum = 0;
+    for(int i = 0; i < v.size(); i++){
+        for(int j = 0; j < 3; j++){
+            if(assigned[i] == -1 && i != var){
+                sum += domain[i][j];
+            }
+        }
+    }
+    assigned[var] = -1;
+    return sum;
+}
+
+/// done
+int no_LCV(int var) // returns the value of the chosen variable according to LCV heuristic
+{
+
     if(var == -1){
         return -1;
     }
+    int val = -1;
+    int maximum_legal_domain = 0;
     for(int i = 0; i < 3; i++){
         if(domain[var][i] == 1){
             return i;
         }
     }
-    return -1;
+
+    return val;
+}
+
+vector<pii> LCV(int var)
+{
+    vector<pii> vals;
+    for(int i = 0; i < 3; i++){
+        if(domain[var][i] == 1){
+            vals.pb(pii(constraint_number(var, i), i));
+        }
+    }
+    forward_checking();
+    sort(vals.begin(), vals.end());
+    reverse(vals.begin(), vals.end());
+    return vals;
 }
 
 /// done
 void back_tracking()
 {
-    number_of_back_tracking++;
     /*
+    cout << "hihihihihihih" << endl;
+    for(int i = 0; i < v.size(); i++){
+        cout << assigned[i] << " ";
+    }
+    cout << endl;
+    print_state();
+    cout << endl;
     if(assigned[0] == 1 && assigned[1] == 0 && assigned[2] == 1 && assigned[3] == 1
        && assigned[4] == 2 && assigned[5] == 2 && assigned[6] == 2 && assigned[7] == 1
        && assigned[8] == 2 && assigned[9] == 2 && assigned[10] == 1 && assigned[11] == 2
@@ -312,19 +353,33 @@ void back_tracking()
         fuck(is_goal()) << endl;
     }
     */
+    number_of_back_tracking++;
     if(is_goal()){
         print_state();
+        fuck(number_of_back_tracking) << endl;
         exit(0);
     }
     forward_checking(); // checks each variable domain
     int id = MRV();
     int value;
-    while((value = LCV(id)) != -1){
+    /*
+    while((value = no_LCV(id)) != -1){
         assigned[id] = value;
         back_tracking();
         assigned[id] = -1;
         domain[id][value] = 0;
     }
+    */
+
+    vector<pii> vals = LCV(id);
+    for(int i = 0; i < vals.size(); i++){
+        value = vals[i].second;
+        assigned[id] = value;
+        back_tracking();
+        assigned[id] = -1;
+        domain[id][value] = 0;
+    }
+
 
 }
 
@@ -371,10 +426,10 @@ int32_t SALI()
     read_input();
     find_variable_cordinate();
     back_tracking();
-    print_state();
-    fuck(number_of_back_tracking) << endl;
 }
-/// 1277869
+
+/**< WRITEN BY ALI ADELKHAH */
+
 /*
 6 6
 1 2 3 1 2 1
@@ -388,4 +443,33 @@ int32_t SALI()
 14 11 15 15 13 16
 14 17 17 18 18 16
 */
-/**< WRITEN BY ALI ADELKHAH */
+
+/*
+10 9
+3 4 4 4 0 3 3 3 4 3
+3 4 4 3 2 2 2 3 4 4
+4 2 3 4 3 3 4 5 3
+4 2 4 3 5 1 4 4 4
+1 2 3 4 4 5 6 7 7
+1 2 3 8 9 5 6 10 10
+11 11 12 8 9 13 14 14 15
+16 17 12 18 18 13 19 19 15
+16 17 20 21 22 22 23 24 25
+26 26 20 21 27 27 23 24 25
+28 28 29 29 30 30 31 31 32
+33 34 35 35 36 36 37 37 32
+33 34 38 39 39 40 40 41 42
+43 43 38 44 44 45 45 41 42
+*/
+
+/*
+    if(assigned[0] == 1 && assigned[1] == 0 && assigned[2] == 1 && assigned[3] == 1
+       && assigned[4] == 2 && assigned[5] == 2 && assigned[6] == 2 && assigned[7] == 1
+       && assigned[8] == 2 && assigned[9] == 2 && assigned[10] == 1 && assigned[11] == 2
+       && assigned[12] == 1 && assigned[13] == 2 && assigned[14] == 0 && assigned[15] == 1){
+        print_state();
+        cout << endl;
+        fuck(is_goal()) << endl;
+    }
+    */
+
