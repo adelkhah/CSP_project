@@ -68,6 +68,23 @@ int mark[N*N]; // just needed at the start to set coordinates for variables
 int a[N][N]; // matrix
 int state[N][N]; // shows the current state
 int next_var;
+void AC3()
+{
+    for(int i = 0; i < v.size(); i++){
+        if(assigned[i] != -1){
+            continue;
+        }
+        for(int j = 0; j < v.size(); j++){
+            if(assigned[j] != -1){
+                continue;
+            }
+            if(i == j){
+                continue;
+            }
+
+        }
+    }
+}
 int get_sum_plus_column(int x) /// done
 {
     int sum = 0;
@@ -111,6 +128,15 @@ void place_variable(int var) /// done
 {
     int x = v[var].first;
     int y = v[var].second;
+    if(assigned[var] == -1){ // has not assigned yet
+        state[x][y] = 0;
+        if(a[x][y+1] == a[x][y]){
+            state[x][y+1] = 0;
+        }
+        if(a[x+1][y] == a[x][y]){
+            state[x+1][y] = 0;
+        }
+    }
     if(assigned[var] == 0){
         state[x][y] = -1;
         if(a[x][y+1] == a[x][y]){
@@ -118,6 +144,15 @@ void place_variable(int var) /// done
         }
         if(a[x+1][y] == a[x][y]){
             state[x+1][y] = +1;
+        }
+    }
+    if(assigned[var] == 1){
+        state[x][y] = 0;
+        if(a[x][y+1] == a[x][y]){
+            state[x][y+1] = 0;
+        }
+        if(a[x+1][y] == a[x][y]){
+            state[x+1][y] = 0;
         }
     }
     if(assigned[var] == 2){
@@ -145,7 +180,7 @@ void update_state() /// done
 /// done
 bool is_consistant() // check if current state is consistent in every aspects
 {
-    update_state();
+    //update_state();
     int pole = 0;
     for(int i = 0; i < v.size(); i++){
         pole += (assigned[i] % 2 == 0 ? 1 : 0);
@@ -185,7 +220,7 @@ bool is_consistant() // check if current state is consistent in every aspects
 }
 void print_state() /// done
 {
-    update_state();
+    //update_state();
     for(int i = 1; i <= n; i++){
         for(int j = 1; j <= m; j++){
             if(state[i][j] == 1){
@@ -204,7 +239,7 @@ void print_state() /// done
 
 bool is_goal() /// done
 {
-    update_state();
+    //update_state();
 
     for(int i = 1; i <= n; i++){
         if(row_plus[i] != get_sum_plus_row(i)){
@@ -244,6 +279,7 @@ void update_domain(int var) /// done
 {
     for(int i = 0; i < 3; i++){
         assigned[var] = i;
+        place_variable(var);
         if(is_consistant()){
             domain[var][i] = 1;
         }
@@ -251,6 +287,7 @@ void update_domain(int var) /// done
             domain[var][i] = 0;
         }
         assigned[var] = -1;
+        place_variable(var);
     }
 }
 void forward_checking() /// done
@@ -288,6 +325,7 @@ int MRV() // returns the index of the next element according to MRV heuristic
 int constraint_number(int var, int val)
 {
     assigned[var] = val;
+    place_variable(var);
     forward_checking();
     int sum = 0;
     for(int i = 0; i < v.size(); i++){
@@ -298,6 +336,7 @@ int constraint_number(int var, int val)
         }
     }
     assigned[var] = -1;
+    place_variable(var);
     return sum;
 }
 
@@ -360,26 +399,31 @@ void back_tracking()
         exit(0);
     }
     forward_checking(); // checks each variable domain
+    AC3();
     int id = MRV();
     int value;
     /*
     while((value = no_LCV(id)) != -1){
         assigned[id] = value;
+        place_variable(id);
         back_tracking();
         assigned[id] = -1;
+        place_variable(id);
         domain[id][value] = 0;
     }
     */
-
+    //*
     vector<pii> vals = LCV(id);
     for(int i = 0; i < vals.size(); i++){
         value = vals[i].second;
         assigned[id] = value;
+        place_variable(id);
         back_tracking();
         assigned[id] = -1;
+        place_variable(id);
         domain[id][value] = 0;
     }
-
+    //*/
 
 }
 
