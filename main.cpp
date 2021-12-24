@@ -50,7 +50,7 @@ template<class A,class B> ostream& operator <<(ostream& out, const set<A,B> &s)
 template<class A> ostream& operator <<(ostream& out, const set<A> &s)
 {out << "[";for(auto i = s.begin(); i != s.end(); i++) {out << ", ";out << *i;}return out << "]";}
 
-const int N = 50;
+const int N = 20;
 int number_of_back_tracking;
 vector<pii> v; // varaibles
 int n,m; // size of matrix
@@ -67,24 +67,51 @@ int cul_neg[N];  // cul_neg[i] = 5 : sum - a[1 ... n][i] = 5
 int mark[N*N]; // just needed at the start to set coordinates for variables
 int a[N][N]; // matrix
 int state[N][N]; // shows the current state
-int next_var;
-void AC3()
-{
-    for(int i = 0; i < v.size(); i++){
-        if(assigned[i] != -1){
-            continue;
-        }
-        for(int j = 0; j < v.size(); j++){
-            if(assigned[j] != -1){
-                continue;
-            }
-            if(i == j){
-                continue;
-            }
 
+int next_var;
+
+void place_variable(int var) /// done
+{
+    int x = v[var].first;
+    int y = v[var].second;
+    if(assigned[var] == -1){ // has not assigned yet
+        state[x][y] = 2;
+        if(a[x][y+1] == a[x][y]){
+            state[x][y+1] = 2;
+        }
+        if(a[x+1][y] == a[x][y]){
+            state[x+1][y] = 2;
+        }
+    }
+    if(assigned[var] == 0){
+        state[x][y] = -1;
+        if(a[x][y+1] == a[x][y]){
+            state[x][y+1] = +1;
+        }
+        if(a[x+1][y] == a[x][y]){
+            state[x+1][y] = +1;
+        }
+    }
+    if(assigned[var] == 1){
+        state[x][y] = 0;
+        if(a[x][y+1] == a[x][y]){
+            state[x][y+1] = 0;
+        }
+        if(a[x+1][y] == a[x][y]){
+            state[x+1][y] = 0;
+        }
+    }
+    if(assigned[var] == 2){
+        state[x][y] = +1;
+        if(a[x][y+1] == a[x][y]){
+            state[x][y+1] = -1;
+        }
+        if(a[x+1][y] == a[x][y]){
+            state[x+1][y] = -1;
         }
     }
 }
+
 int get_sum_plus_column(int x) /// done
 {
     int sum = 0;
@@ -118,53 +145,50 @@ int get_sum_neg_row(int x) /// done
     }
     return sum;
 }
-void fuck_domain()
+
+
+
+int get_empty_column(int x) /// done
 {
+    set<int> s;
+    s.clear();
+    for(int i = 1; i <= n; i++){
+        if(state[i][x] == 2){
+            s.insert(a[i][x]);
+        }
+    }
+    int ans = s.size();
+    return ans;
+}
+int get_empty_row(int x) /// done
+{
+    set<int> s;
+    s.clear();
+    for(int i = 1; i <= m; i++){
+        if(state[x][i] == 2){
+            s.insert(a[x][i]);
+        }
+    }
+    int ans = s.size();
+    return ans;
+}
+
+int fuck_domain()
+{
+
     for(int i = 0; i < v.size(); i++){
         cout << i << " : " << domain[i][0] << " " << domain[i][1] << " " << domain[i][2] << endl;
     }
+    return 0;
+    int sum = 0;
+    for(int i = 0; i < v.size(); i++){
+        for(int k = 0; k < 3; k++){
+            sum += domain[i][k];
+        }
+    }
+    return sum;
 }
-void place_variable(int var) /// done
-{
-    int x = v[var].first;
-    int y = v[var].second;
-    if(assigned[var] == -1){ // has not assigned yet
-        state[x][y] = 0;
-        if(a[x][y+1] == a[x][y]){
-            state[x][y+1] = 0;
-        }
-        if(a[x+1][y] == a[x][y]){
-            state[x+1][y] = 0;
-        }
-    }
-    if(assigned[var] == 0){
-        state[x][y] = -1;
-        if(a[x][y+1] == a[x][y]){
-            state[x][y+1] = +1;
-        }
-        if(a[x+1][y] == a[x][y]){
-            state[x+1][y] = +1;
-        }
-    }
-    if(assigned[var] == 1){
-        state[x][y] = 0;
-        if(a[x][y+1] == a[x][y]){
-            state[x][y+1] = 0;
-        }
-        if(a[x+1][y] == a[x][y]){
-            state[x+1][y] = 0;
-        }
-    }
-    if(assigned[var] == 2){
-        state[x][y] = +1;
-        if(a[x][y+1] == a[x][y]){
-            state[x][y+1] = -1;
-        }
-        if(a[x+1][y] == a[x][y]){
-            state[x+1][y] = -1;
-        }
-    }
-}
+
 void update_state() /// done
 {
     for(int i = 0; i < N; i++) for(int j = 0; j < N; j++) state[i][j] = 0;
@@ -183,37 +207,67 @@ bool is_consistant() // check if current state is consistent in every aspects
     //update_state();
     int pole = 0;
     for(int i = 0; i < v.size(); i++){
-        pole += (assigned[i] % 2 == 0 ? 1 : 0);
+        pole += ((assigned[i] == 0 || assigned[i] == 2) ? 1 : 0);
+    }
+    int not_assigned = 0;
+    for(int i = 0; i < v.size(); i++){
+        not_assigned += (assigned[i] == -1 ? 1 : 0);
     }
     if(pole > total_pole){
         return false;
     }
+    if(pole + not_assigned < total_pole){
+        return false;
+    }
+
     for(int i = 1; i <= n; i++){
         for(int j = 1; j <= m; j++){
-            if(state[i][j] == state[i+1][j] && state[i][j] != 0){
+            if(state[i][j] == state[i+1][j] && state[i][j] != 0 && state[i][j] != 2){
                 return false;
             }
-            if(state[i][j] == state[i][j+1] && state[i][j] != 0){
+            if(state[i][j] == state[i][j+1] && state[i][j] != 0 && state[i][j] != 2){
                 return false;
             }
         }
     }
 
     for(int i = 1; i <= n; i++){
-        if(row_plus[i] < get_sum_plus_row(i)){
+        int pty = get_empty_row(i);
+        int gspr = get_sum_plus_row(i);
+        int gsnr = get_sum_neg_row(i);
+        if(row_plus[i] < gspr){
             return false;
         }
-        if(row_neg[i] < get_sum_neg_row(i)){
+        if(row_neg[i] < gsnr){
             return false;
         }
+
+        if(row_plus[i] > pty + gspr){
+            return false;
+        }
+        if(row_neg[i] > pty + gsnr){
+            return false;
+        }
+
     }
     for(int i = 1; i <= m; i++){
-        if(cul_plus[i] < get_sum_plus_column(i)){
+        int pty = get_empty_column(i);
+        int gspc = get_sum_plus_column(i);
+        int gsnc = get_sum_neg_column(i);
+        if(cul_plus[i] < gspc){
             return false;
         }
-        if(cul_neg[i] < get_sum_neg_column(i)){
+        if(cul_neg[i] < gsnc){
             return false;
         }
+
+        if(cul_plus[i] > pty + gspc){
+            return false;
+        }
+        if(cul_neg[i] > pty + gsnc){
+            return false;
+        }
+
     }
 
     return true;
@@ -231,6 +285,9 @@ void print_state() /// done
             }
             if(state[i][j] == 0){
                 cout << "0 ";
+            }
+            if(state[i][j] == 2){
+                cout << "2 ";
             }
         }
         cout << endl;
@@ -273,6 +330,11 @@ void pre_process() // at first no assignment is done and all domain are avalible
             domain[i][j] = 1;
         }
     }
+    for(int i = 0; i < N; i++){
+        for(int j = 0; j < N; j++){
+            state[i][j] = 2;
+        }
+    }
 }
 
 void update_domain(int var) /// done
@@ -292,7 +354,6 @@ void update_domain(int var) /// done
 }
 void forward_checking() /// done
 {
-
     for(int i = 0; i < v.size(); i++){
         if(assigned[i] == -1){
             update_domain(i);
@@ -300,7 +361,49 @@ void forward_checking() /// done
     }
 }
 
-
+bool check_arc_consistancy(int x, int d, int y) // if assigned[x] = d then can y be assigned by any consistant value
+{
+    assigned[x] = d;
+    place_variable(x);
+    bool arc_consistant = false;
+    for(int i = 0; i < 3; i++){
+        if(domain[y][i] == 1){
+            assigned[y] = i;
+            place_variable(y);
+            if(is_consistant()){
+               arc_consistant = true;
+            }
+        }
+    }
+    assigned[x] = -1;
+    place_variable(x);
+    assigned[y] = -1;
+    place_variable(y);
+    return arc_consistant;
+}
+void AC3()
+{
+    for(int i = 0; i < v.size(); i++){
+        if(assigned[i] != -1){
+            continue;
+        }
+        for(int j = 0; j < v.size(); j++){
+            if(assigned[j] != -1){
+                continue;
+            }
+            if(i == j){
+                continue;
+            }
+            for(int k = 0; k < 3; k++){
+                if(domain[i][k] == 1){
+                    if(!check_arc_consistancy(i, k, j)){
+                        domain[i][k] = 0;
+                    }
+                }
+            }
+        }
+    }
+}
 /// done
 int MRV() // returns the index of the next element according to MRV heuristic
 {
@@ -392,6 +495,7 @@ void back_tracking()
         fuck(is_goal()) << endl;
     }
     */
+
     number_of_back_tracking++;
     if(is_goal()){
         print_state();
@@ -402,7 +506,7 @@ void back_tracking()
     AC3();
     int id = MRV();
     int value;
-    /*
+    ///*
     while((value = no_LCV(id)) != -1){
         assigned[id] = value;
         place_variable(id);
@@ -411,8 +515,8 @@ void back_tracking()
         place_variable(id);
         domain[id][value] = 0;
     }
-    */
-    //*
+    //*/
+    /*
     vector<pii> vals = LCV(id);
     for(int i = 0; i < vals.size(); i++){
         value = vals[i].second;
@@ -423,7 +527,7 @@ void back_tracking()
         place_variable(id);
         domain[id][value] = 0;
     }
-    //*/
+    */
 
 }
 
@@ -470,6 +574,8 @@ int32_t SALI()
     read_input();
     find_variable_cordinate();
     back_tracking();
+    print_state();
+    fuck(number_of_back_tracking) << endl;
 }
 
 /**< WRITEN BY ALI ADELKHAH */
