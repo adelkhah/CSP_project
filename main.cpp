@@ -50,7 +50,7 @@ template<class A,class B> ostream& operator <<(ostream& out, const set<A,B> &s)
 template<class A> ostream& operator <<(ostream& out, const set<A> &s)
 {out << "[";for(auto i = s.begin(); i != s.end(); i++) {out << ", ";out << *i;}return out << "]";}
 
-const int N = 20;
+const int N = 100;
 int number_of_back_tracking;
 vector<pii> v; // varaibles
 int n,m; // size of matrix
@@ -478,23 +478,6 @@ vector<pii> LCV(int var)
 /// done
 void back_tracking()
 {
-    /*
-    cout << "hihihihihihih" << endl;
-    for(int i = 0; i < v.size(); i++){
-        cout << assigned[i] << " ";
-    }
-    cout << endl;
-    print_state();
-    cout << endl;
-    if(assigned[0] == 1 && assigned[1] == 0 && assigned[2] == 1 && assigned[3] == 1
-       && assigned[4] == 2 && assigned[5] == 2 && assigned[6] == 2 && assigned[7] == 1
-       && assigned[8] == 2 && assigned[9] == 2 && assigned[10] == 1 && assigned[11] == 2
-       && assigned[12] == 1 && assigned[13] == 2 && assigned[14] == 0 && assigned[15] == 1){
-        print_state();
-        cout << endl;
-        fuck(is_goal()) << endl;
-    }
-    */
 
     number_of_back_tracking++;
     if(is_goal()){
@@ -503,7 +486,7 @@ void back_tracking()
         exit(0);
     }
     forward_checking(); // checks each variable domain
-    AC3();
+    //AC3();
     int id = MRV();
     int value;
     ///*
@@ -575,7 +558,6 @@ int32_t SALI()
     find_variable_cordinate();
     back_tracking();
     print_state();
-    fuck(number_of_back_tracking) << endl;
 }
 
 /**< WRITEN BY ALI ADELKHAH */
@@ -612,14 +594,4 @@ int32_t SALI()
 43 43 38 44 44 45 45 41 42
 */
 
-/*
-    if(assigned[0] == 1 && assigned[1] == 0 && assigned[2] == 1 && assigned[3] == 1
-       && assigned[4] == 2 && assigned[5] == 2 && assigned[6] == 2 && assigned[7] == 1
-       && assigned[8] == 2 && assigned[9] == 2 && assigned[10] == 1 && assigned[11] == 2
-       && assigned[12] == 1 && assigned[13] == 2 && assigned[14] == 0 && assigned[15] == 1){
-        print_state();
-        cout << endl;
-        fuck(is_goal()) << endl;
-    }
-    */
 
